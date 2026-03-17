@@ -1,30 +1,31 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authApi } from '../api/services';
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const loginMutation = useMutation({
-    mutationFn: authApi.login,
+  const registerMutation = useMutation({
+    mutationFn: authApi.register,
     onSuccess: (data) => {
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/');
     },
     onError: (err: any) => {
-      setError(err.response?.data?.detail || 'Ошибка авторизации. Проверьте данные.');
+      setError(err.response?.data?.detail || 'Ошибка регистрации. Проверьте данные.');
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    loginMutation.mutate({ email, password });
+    registerMutation.mutate({ email, password, business_name: businessName });
   };
 
   return (
@@ -34,7 +35,7 @@ export default function Login() {
           <h1 className="text-4xl font-extrabold bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent mb-2">
             LaFlower
           </h1>
-          <p className="text-surface-500 font-medium">Добро пожаловать в систему</p>
+          <p className="text-surface-500 font-medium">Регистрация нового бизнеса</p>
         </div>
 
         {error && (
@@ -45,7 +46,18 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-surface-800 mb-2">Email</label>
+            <label className="block text-sm font-semibold text-surface-800 mb-2">Название вашего бизнеса</label>
+            <input
+              type="text"
+              required
+              className="w-full px-4 py-3 rounded-xl border border-surface-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition-all shadow-sm"
+              placeholder="Мой Цветочный Магазин"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-surface-800 mb-2">Email владельца (Админ)</label>
             <input
               type="email"
               required
@@ -68,22 +80,18 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            disabled={loginMutation.isPending}
+            disabled={registerMutation.isPending}
             className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-bold rounded-xl shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loginMutation.isPending ? 'Вход...' : 'Войти'}
+            {registerMutation.isPending ? 'Загрузка...' : 'Зарегистрироваться'}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-surface-600">
-          Впервые здесь?{' '}
-          <button
-            type="button"
-            onClick={() => navigate('/register')}
-            className="font-semibold text-brand-600 hover:text-brand-500 transition-colors"
-          >
-            Зарегистрировать бизнес
-          </button>
+          Уже есть аккаунт?{' '}
+          <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-500 transition-colors">
+            Войти
+          </Link>
         </p>
       </div>
     </div>

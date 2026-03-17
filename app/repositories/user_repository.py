@@ -9,18 +9,20 @@ class UserRepository:
         self.session = session
 
     async def get_by_email(self, email: str) -> User | None:
-        stmt = select(User).where(User.email == email)
+        from sqlalchemy.orm import selectinload
+        stmt = select(User).options(selectinload(User.business)).where(User.email == email)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_by_id(self, user_id: int) -> User | None:
-        stmt = select(User).where(User.id == user_id)
+        from sqlalchemy.orm import selectinload
+        stmt = select(User).options(selectinload(User.business)).where(User.id == user_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create(self, email: str, hashed_password: str, role: UserRole) -> User:
-        user = User(email=email, hashed_password=hashed_password, role=role)
+    async def create(self, email: str, hashed_password: str, role: UserRole, business_id: int) -> User:
+        user = User(email=email, hashed_password=hashed_password, role=role, business_id=business_id)
         self.session.add(user)
         await self.session.flush()
-        await self.session.refresh(user)
+        await self.session.refresh(user, ['business'])
         return user

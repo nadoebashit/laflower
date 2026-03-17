@@ -15,6 +15,7 @@ class ReportService:
 
     async def get_summary(
         self,
+        business_id: int,
         period: str | None,
         from_date: date | None,
         to_date: date | None,
@@ -24,7 +25,7 @@ class ReportService:
         dt_from = datetime.combine(period_start, time.min, tzinfo=timezone.utc)
         dt_to_exclusive = datetime.combine(period_end + timedelta(days=1), time.min, tzinfo=timezone.utc)
 
-        summary = await self.report_repository.get_summary(dt_from=dt_from, dt_to_exclusive=dt_to_exclusive)
+        summary = await self.report_repository.get_summary(business_id=business_id, dt_from=dt_from, dt_to_exclusive=dt_to_exclusive)
         return ReportsResponse(
             period_start=period_start,
             period_end=period_end,

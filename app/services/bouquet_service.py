@@ -15,11 +15,11 @@ class BouquetService:
         self.bouquet_repository = BouquetRepository(session)
         self.flower_repository = FlowerRepository(session)
 
-    async def create(self, payload: BouquetCreateRequest) -> BouquetResponse:
+    async def create(self, business_id: int, payload: BouquetCreateRequest) -> BouquetResponse:
         flower_quantities = {item.flower_id: item.quantity for item in payload.items}
         flower_ids = list(flower_quantities.keys())
 
-        flowers = await self.flower_repository.get_by_ids_for_update(flower_ids)
+        flowers = await self.flower_repository.get_by_ids_for_update(business_id, flower_ids)
         flowers_by_id = {flower.id: flower for flower in flowers}
 
         missing_ids = [flower_id for flower_id in flower_ids if flower_id not in flowers_by_id]
@@ -78,13 +78,14 @@ class BouquetService:
         total_profit = to_money(total_price - total_cost)
 
         bouquet = await self.bouquet_repository.create(
+            business_id=business_id,
             total_cost=total_cost,
             total_price=total_price,
             total_profit=total_profit,
             items=bouquet_items_data,
         )
 
-        saved_bouquet = await self.bouquet_repository.get_by_id(bouquet.id)
+        saved_bouquet = await self.bouquet_repository.get_by_id(business_id, bouquet.id)
         if not saved_bouquet:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -93,8 +94,8 @@ class BouquetService:
 
         return BouquetResponse.model_validate(saved_bouquet)
 
-    async def list(self, offset: int, limit: int) -> BouquetListResponse:
-        bouquets, total = await self.bouquet_repository.get_list(offset=offset, limit=limit)
+    async def list(self, business_id: int, offset: int, limit: int) -> BouquetListResponse:
+        bouquets, total = await self.bouquet_repository.get_list(business_id=business_id, offset=offset, limit=limit)
         return BouquetListResponse(
             total=total,
             offset=offset,

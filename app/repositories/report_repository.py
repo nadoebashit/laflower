@@ -11,7 +11,7 @@ class ReportRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_summary(self, dt_from: datetime, dt_to_exclusive: datetime) -> dict:
+    async def get_summary(self, business_id: int, dt_from: datetime, dt_to_exclusive: datetime) -> dict:
         stmt = (
             select(
                 func.count(Bouquet.id),
@@ -19,6 +19,7 @@ class ReportRepository:
                 func.coalesce(func.sum(Bouquet.total_cost), 0),
                 func.coalesce(func.sum(Bouquet.total_profit), 0),
             )
+            .where(Bouquet.business_id == business_id)
             .where(Bouquet.created_at >= dt_from)
             .where(Bouquet.created_at < dt_to_exclusive)
         )

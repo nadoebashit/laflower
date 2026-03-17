@@ -24,3 +24,16 @@ async def register(payload: RegisterRequest, service: AuthServiceDep) -> TokenRe
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: LoginRequest, service: AuthServiceDep) -> TokenResponse:
     return await service.login(payload)
+
+
+from app.api.v1.deps import CurrentUserDep, require_roles
+from app.db.models import UserRole
+from app.schemas.auth import EmployeeCreateRequest, UserResponse
+
+@router.post("/create-employee", response_model=UserResponse, dependencies=[Depends(require_roles(UserRole.ADMIN))])
+async def create_employee(
+    payload: EmployeeCreateRequest,
+    current_user: CurrentUserDep,
+    service: AuthServiceDep,
+) -> UserResponse:
+    return await service.create_employee(current_user, payload)

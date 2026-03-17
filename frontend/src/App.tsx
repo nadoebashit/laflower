@@ -3,11 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import Sale from './pages/Sale';
 import History from './pages/History';
 import Reports from './pages/Reports';
+import Employees from './pages/Employees';
 
 const queryClient = new QueryClient();
 
@@ -25,12 +27,14 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route element={<PrivateRoute><Layout><Outlet /></Layout></PrivateRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/sale" element={<Sale />} />
             <Route path="/history" element={<History />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/employees" element={<Employees />} />
           </Route>
         </Routes>
       </BrowserRouter>

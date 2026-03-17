@@ -20,17 +20,17 @@ BouquetServiceDep = Annotated[BouquetService, Depends(get_bouquet_service)]
 @router.post("", response_model=BouquetResponse, status_code=status.HTTP_201_CREATED)
 async def create_bouquet(
     payload: BouquetCreateRequest,
-    _current_user: Annotated[object, Depends(require_roles(UserRole.ADMIN, UserRole.EMPLOYEE))],
+    current_user: Annotated[object, Depends(require_roles(UserRole.ADMIN, UserRole.EMPLOYEE))],
     service: BouquetServiceDep,
 ) -> BouquetResponse:
-    return await service.create(payload)
+    return await service.create(business_id=current_user.business_id, payload=payload)
 
 
 @router.get("", response_model=BouquetListResponse)
 async def list_bouquets(
-    _current_user: CurrentUserDep,
+    current_user: CurrentUserDep,
     pagination: PaginationDep,
     service: BouquetServiceDep,
 ) -> BouquetListResponse:
     offset, limit = pagination
-    return await service.list(offset=offset, limit=limit)
+    return await service.list(business_id=current_user.business_id, offset=offset, limit=limit)

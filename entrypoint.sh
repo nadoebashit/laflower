@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-alembic upgrade head
-python -m app.db.seed
+# Миграции и заполнение базы (seed) теперь нужно будет запускать вручную
+# когда структура базы данных меняется.
 
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000

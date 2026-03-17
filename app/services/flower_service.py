@@ -15,8 +15,8 @@ class FlowerService:
         self.session = session
         self.flower_repository = FlowerRepository(session)
 
-    async def list(self, offset: int, limit: int) -> FlowerListResponse:
-        flowers, total = await self.flower_repository.get_list(offset=offset, limit=limit)
+    async def list(self, business_id: int, offset: int, limit: int) -> FlowerListResponse:
+        flowers, total = await self.flower_repository.get_list(business_id=business_id, offset=offset, limit=limit)
         return FlowerListResponse(
             total=total,
             offset=offset,
@@ -24,7 +24,7 @@ class FlowerService:
             items=[FlowerResponse.model_validate(item) for item in flowers],
         )
 
-    async def create(self, payload: FlowerCreate) -> FlowerResponse:
+    async def create(self, business_id: int, payload: FlowerCreate) -> FlowerResponse:
         normalized_name = payload.name.strip()
         if not normalized_name:
             raise HTTPException(
@@ -37,10 +37,11 @@ class FlowerService:
             purchase_price=to_money(Decimal(payload.purchase_price)),
             markup_percent=to_money(Decimal(payload.markup_percent)),
             stock_quantity=payload.stock_quantity,
+            business_id=business_id,
         )
 
         try:
-            existing = await self.flower_repository.get_by_name(flower.name)
+            existing = await self.flower_repository.get_by_name(business_id, flower.name)
             if existing:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -55,9 +56,9 @@ class FlowerService:
 
         return FlowerResponse.model_validate(flower)
 
-    async def update(self, flower_id: int, payload: FlowerUpdate) -> FlowerResponse:
+    async def update(self, business_id: int, flower_id: int, payload: FlowerUpdate) -> FlowerResponse:
         try:
-            flower = await self.flower_repository.get_by_id(flower_id)
+            flower = await self.flower_repository.get_by_id(business_id, flower_id)
             if not flower:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -72,7 +73,7 @@ class FlowerService:
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail="name cannot be empty",
                     )
-                existing = await self.flower_repository.get_by_name(new_name)
+                existing = await self.flower_repository.get_by_name(business_id, new_name)
                 if existing and existing.id != flower_id:
                     raise HTTPException(
                         status_code=status.HTTP_409_CONFLICT,
@@ -101,9 +102,9 @@ class FlowerService:
 
         return FlowerResponse.model_validate(flower)
 
-    async def delete(self, flower_id: int) -> None:
+    async def delete(self, business_id: int, flower_id: int) -> None:
         try:
-            flower = await self.flower_repository.get_by_id(flower_id)
+            flower = await self.flower_repository.get_by_id(business_id, flower_id)
             if not flower:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,

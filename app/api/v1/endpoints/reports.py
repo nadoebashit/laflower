@@ -19,10 +19,10 @@ ReportServiceDep = Annotated[ReportService, Depends(get_report_service)]
 
 @router.get("", response_model=ReportsResponse)
 async def get_reports(
-    _current_user: CurrentUserDep,
+    current_user: CurrentUserDep,
     service: ReportServiceDep,
     period: Annotated[str | None, Query()] = None,
     from_date: Annotated[date | None, Query(alias="from")] = None,
     to_date: Annotated[date | None, Query(alias="to")] = None,
 ) -> ReportsResponse:
-    return await service.get_summary(period=period, from_date=from_date, to_date=to_date)
+    return await service.get_summary(business_id=current_user.business_id, period=period, from_date=from_date, to_date=to_date)

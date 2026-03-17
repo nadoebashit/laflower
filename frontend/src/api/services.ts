@@ -60,6 +60,14 @@ export const authApi = {
     const { data } = await api.post('/auth/login', credentials);
     return data;
   },
+  register: async (payload: any): Promise<AuthResponse> => {
+    const { data } = await api.post('/auth/register', payload);
+    return data;
+  },
+  createEmployee: async (payload: any): Promise<User> => {
+    const { data } = await api.post('/auth/create-employee', payload);
+    return data;
+  },
 };
 
 export const flowersApi = {
