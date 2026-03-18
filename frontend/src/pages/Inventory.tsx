@@ -8,6 +8,7 @@ export default function Inventory() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: '', purchase_price: '', markup_percent: '', stock_quantity: '' });
+  const [sellPriceTemp, setSellPriceTemp] = useState('');
   const queryClient = useQueryClient();
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -37,6 +38,13 @@ export default function Inventory() {
   const resetForm = () => {
     setEditingId(null);
     setFormData({ name: '', purchase_price: '', markup_percent: '', stock_quantity: '' });
+    setSellPriceTemp('');
+  };
+
+  const calculateSalePrice = (buy: string, mk: string) => {
+     const b = parseFloat(buy) || 0;
+     const m = parseFloat(mk) || 0;
+     return (b + b * (m / 100)).toFixed(2);
   };
 
   const handleEdit = (flower: Flower) => {
@@ -47,13 +55,8 @@ export default function Inventory() {
       markup_percent: flower.markup_percent,
       stock_quantity: String(flower.stock_quantity),
     });
+    setSellPriceTemp(calculateSalePrice(flower.purchase_price, flower.markup_percent));
     setIsOpen(true);
-  };
-
-  const calculateSalePrice = (buy: string, mk: string) => {
-     const b = parseFloat(buy) || 0;
-     const m = parseFloat(mk) || 0;
-     return (b + b * (m / 100)).toFixed(2);
   };
 
   return (
@@ -139,12 +142,32 @@ export default function Inventory() {
                 <div>
                    <label className="block text-sm font-semibold text-surface-800 mb-1">Закупка (₸)</label>
                    <input required type="number" step="0.01" min="0.01" className="w-full px-4 py-2.5 rounded-xl border border-surface-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition-all shadow-sm"
-                          value={formData.purchase_price} onChange={e => setFormData({...formData, purchase_price: e.target.value})} />
+                          value={formData.purchase_price} onChange={e => {
+                              setFormData({...formData, purchase_price: e.target.value});
+                              const buy = parseFloat(e.target.value) || 0;
+                              const sell = parseFloat(sellPriceTemp) || 0;
+                              if (buy > 0 && sell > 0) {
+                                const markup = ((sell - buy) / buy) * 100;
+                                setFormData(prev => ({...prev, markup_percent: Math.max(0, markup).toString()}));
+                              }
+                          }} />
                 </div>
                 <div>
-                   <label className="block text-sm font-semibold text-surface-800 mb-1">Наценка (%)</label>
+                   <label className="block text-sm font-semibold text-surface-800 mb-1">Цена продажи (₸)</label>
                    <input required type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-surface-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition-all shadow-sm"
-                          value={formData.markup_percent} onChange={e => setFormData({...formData, markup_percent: e.target.value})} />
+                          value={sellPriceTemp} onChange={e => {
+                            setSellPriceTemp(e.target.value);
+                            const buy = parseFloat(formData.purchase_price) || 0;
+                            const sell = parseFloat(e.target.value) || 0;
+                            if (buy > 0) {
+                              const markup = ((sell - buy) / buy) * 100;
+                              setFormData({...formData, markup_percent: Math.max(0, markup).toString()});
+                            }
+                          }} />
+                    <p className="text-xs text-surface-500 mt-1 flex justify-between">
+                      <span>Наценка автоматически:</span>
+                      <span className="font-bold text-brand-600">{parseFloat(formData.markup_percent || '0').toFixed(2)}%</span>
+                    </p>
                 </div>
               </div>
               <div>

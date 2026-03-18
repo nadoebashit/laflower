@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, History, BarChart2, LogOut, Menu, X, Users } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, History, BarChart2, LogOut, Menu, X, Users, AlertTriangle } from 'lucide-react';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -12,6 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { name: 'Склад', path: '/inventory', icon: Package },
     { name: 'Продажа', path: '/sale', icon: ShoppingCart },
     { name: 'История', path: '/history', icon: History, role: 'admin' },
+    { name: 'Затраты', path: '/expenses', icon: AlertTriangle, role: 'admin' },
     { name: 'Отчеты', path: '/reports', icon: BarChart2, role: 'admin' },
     { name: 'Сотрудники', path: '/employees', icon: Users, role: 'admin' },
   ].filter(l => !l.role || user.role === l.role);

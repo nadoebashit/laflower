@@ -10,6 +10,7 @@ import Sale from './pages/Sale';
 import History from './pages/History';
 import Reports from './pages/Reports';
 import Employees from './pages/Employees';
+import Expenses from './pages/Expenses';
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ function App() {
             <Route path="/history" element={<History />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/employees" element={<Employees />} />
+            <Route path="/expenses" element={<Expenses />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -105,3 +105,33 @@ export const reportsApi = {
     return data;
   },
 };
+
+export interface Expense {
+  id: number;
+  flower_id: number | null;
+  quantity: number | null;
+  amount: string;
+  description: string | null;
+  photo_url: string | null;
+  created_at: string;
+}
+
+export const expensesApi = {
+  list: async (): Promise<Paginated<Expense>> => {
+    const { data } = await api.get('/expenses?limit=100');
+    return data;
+  },
+  create: async (payload: { flower_id?: number; quantity?: number; amount?: number; description?: string }, file?: File): Promise<Expense> => {
+    const formData = new FormData();
+    formData.append('payload_json', JSON.stringify(payload));
+    if (file) {
+      formData.append('file', file);
+    }
+    const { data } = await api.post('/expenses', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+};

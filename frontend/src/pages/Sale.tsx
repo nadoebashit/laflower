@@ -54,6 +54,32 @@ export default function Sale() {
      setCart(prev => prev.filter(item => item.flowerId !== flowerId));
   };
 
+  const handleQuantityInput = (flowerId: number, valStr: string, maxStock: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.flowerId === flowerId) {
+        if (valStr === '') {
+           return { ...item, quantity: '' as any };
+        }
+        const newQ = parseInt(valStr);
+        if (!isNaN(newQ)) {
+           return { ...item, quantity: Math.min(newQ, maxStock) };
+        }
+      }
+      return item;
+    }));
+  };
+
+  const handleQuantityBlur = (flowerId: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.flowerId === flowerId) {
+         if (!item.quantity || (item.quantity as any) <= 0) {
+            return { ...item, quantity: 1 };
+         }
+      }
+      return item;
+    }));
+  };
+
   const calculateSalePrice = (buy: string, mk: string) => {
      const b = parseFloat(buy) || 0;
      const m = parseFloat(mk) || 0;
@@ -133,9 +159,17 @@ export default function Sale() {
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center bg-white rounded-lg shadow-sm w-max overflow-hidden border border-surface-200">
-                        <button onClick={() => updateQuantity(item.flowerId, -1)} className="p-2 text-surface-500 hover:bg-surface-100 hover:text-brand-600 transition-colors"><Minus size={14}/></button>
-                        <span className="px-4 font-bold text-sm text-surface-900 w-8 text-center">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.flowerId, 1)} className="p-2 text-surface-500 hover:bg-surface-100 hover:text-brand-600 transition-colors"><Plus size={14}/></button>
+                        <button onClick={() => updateQuantity(item.flowerId, -1)} className="p-2 text-surface-500 hover:bg-surface-100 hover:text-brand-600 transition-colors border-r border-surface-200"><Minus size={14}/></button>
+                        <input 
+                          type="number"
+                          min="1"
+                          max={flower.stock_quantity}
+                          className="w-14 px-1 py-1 text-center font-bold text-sm text-surface-900 outline-none appearance-none"
+                          value={item.quantity === '' as any ? '' : item.quantity}
+                          onChange={(e) => handleQuantityInput(item.flowerId, e.target.value, flower.stock_quantity)}
+                          onBlur={() => handleQuantityBlur(item.flowerId)}
+                        />
+                        <button onClick={() => updateQuantity(item.flowerId, 1)} className="p-2 text-surface-500 hover:bg-surface-100 hover:text-brand-600 transition-colors border-l border-surface-200"><Plus size={14}/></button>
                       </div>
                       <button onClick={() => removeFromCart(item.flowerId)} className="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-xl transition-colors">
                         <Trash2 size={16} />
