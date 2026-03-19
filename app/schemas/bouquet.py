@@ -11,6 +11,7 @@ class BouquetSaleItemRequest(BaseModel):
 
 class BouquetCreateRequest(BaseModel):
     items: list[BouquetSaleItemRequest] = Field(min_length=1)
+    custom_total_price: Decimal | None = Field(default=None, ge=0)
 
     @model_validator(mode="after")
     def validate_unique_flowers(self) -> "BouquetCreateRequest":

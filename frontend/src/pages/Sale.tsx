@@ -11,6 +11,7 @@ export default function Sale() {
   });
 
   const [cart, setCart] = useState<{flowerId: number, quantity: number}[]>([]);
+  const [customPrice, setCustomPrice] = useState<string>('');
   const flowers = flowersResponse?.items || [];
 
   const bouquetMutation = useMutation({
@@ -18,6 +19,7 @@ export default function Sale() {
     onSuccess: () => {
       alert('Букет успешно продан!');
       setCart([]);
+      setCustomPrice('');
     },
     onError: (err: any) => {
       alert(err.response?.data?.detail || 'Ошибка продажи букета');
@@ -99,9 +101,16 @@ export default function Sale() {
     return { cost, price, profit: price - cost };
   }, [cart, flowers]);
 
+  const finalPrice = customPrice !== '' ? (parseFloat(customPrice) || 0) : totals.price;
+  const finalProfit = finalPrice - totals.cost;
+
   const handleSale = () => {
      if (cart.length === 0) return;
-     bouquetMutation.mutate({ items: cart.map(i => ({ flower_id: i.flowerId, quantity: i.quantity })) });
+     const payload: any = { items: cart.map(i => ({ flower_id: i.flowerId, quantity: i.quantity })) };
+     if (customPrice !== '') {
+       payload.custom_total_price = finalPrice;
+     }
+     bouquetMutation.mutate(payload);
   };
 
   if (isLoading) return <div className="p-8 text-center text-surface-500 font-medium animate-pulse">Загрузка склада...</div>;
@@ -188,11 +197,20 @@ export default function Sale() {
              </div>
              <div className="flex justify-between text-green-600 font-bold text-sm">
                <span>Ожидаемая прибыль:</span>
-               <span>{totals.profit.toFixed(2)} ₸</span>
+               <span>{finalProfit.toFixed(2)} ₸</span>
              </div>
              <div className="flex justify-between items-center pt-2">
                <span className="text-xl font-extrabold text-surface-900">Итого:</span>
-               <span className="text-3xl font-extrabold text-brand-600">{totals.price.toFixed(2)} ₸</span>
+               <div className="flex items-center">
+                 <input 
+                   type="number"
+                   className="w-24 sm:w-28 text-right text-3xl font-extrabold text-brand-600 outline-none border-b-2 border-transparent focus:border-brand-200 bg-transparent placeholder:text-surface-300 transition-colors"
+                   value={customPrice}
+                   onChange={(e) => setCustomPrice(e.target.value)}
+                   placeholder={totals.price.toFixed(0)}
+                 />
+                 <span className="text-3xl font-extrabold text-brand-600 ml-1">₸</span>
+               </div>
              </div>
              <button
                disabled={cart.length === 0 || bouquetMutation.isPending}

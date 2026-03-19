@@ -77,6 +77,10 @@ class BouquetService:
 
         total_profit = to_money(total_price - total_cost)
 
+        if payload.custom_total_price is not None:
+            total_price = to_money(payload.custom_total_price)
+            total_profit = to_money(total_price - total_cost)
+
         bouquet = await self.bouquet_repository.create(
             business_id=business_id,
             total_cost=total_cost,
